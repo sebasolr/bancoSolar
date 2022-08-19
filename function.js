@@ -42,6 +42,7 @@ async function editarUsuario(nombre,balance,id){
 }
 async function eliminarUsuario(id){
     const client = await pool.connect()
+    const eliminarTransferencia = await client.query(`delete from transferencias where emisor=${id} or receptor=${id}`)
     const eliminarUsuario = await client.query(`delete from usuarios where id=${id}`)
     client.release()
 }

@@ -1,14 +1,11 @@
 const express = require('express');
-const {getForm, crearUsuario, mostrarUsuario,editarUsuario,eliminarUsuario,crearTransferencia,historialTransferencias,formatDate  } = require('./function.js')
-
+// funciones
+const {getForm, crearUsuario, mostrarUsuario,editarUsuario,eliminarUsuario,crearTransferencia,historialTransferencias,formatDate} = require('./function.js')
+//aplicacion web
 const app = express();
-
-
-
-
+//pagina principal
 app.use(express.static('public'));
 // generamos las rutas solicitadas
-
 app.get('/',async (req,res)=>{
 
 })
@@ -16,7 +13,11 @@ app.post('/usuario',async (req,res)=>{
     const datos = await getForm(req);
     const nombre = datos.nombre;
     const balance = datos.balance;
-    await crearUsuario(nombre,balance)
+    console.log(balance);
+    if(isNaN(balance) || !balance){
+       console.log('error');
+    }else{await crearUsuario(nombre.trim(),balance)
+    }
     res.end()
 })
 app.get('/usuarios',async (req,res)=>{
@@ -36,6 +37,7 @@ app.delete('/usuario',async (req,res)=>{
     const id = req.query.id;
     eliminarUsuario(id)
     res.end()
+
 })
 app.post('/transferencia',async (req,res)=>{
     const datos = await getForm(req)
@@ -43,18 +45,18 @@ app.post('/transferencia',async (req,res)=>{
     const receptor = datos.receptor;
     const monto = datos.monto
     
-    //-------------------------- sacar esta funcion fea
+    
     var date = new Date();
 
 
     await crearTransferencia(emisor,receptor,monto,formatDate(date))
-    res.end() 
+    res.json({}) 
 
 })
 
 app.get('/transferencias',async (req,res)=>{
     let datos =await  historialTransferencias()
-    res.json(datos).redirect
+    res.json(datos)
     
 })
 app.get('/*',(req,res)=>{
