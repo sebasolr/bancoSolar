@@ -48,9 +48,32 @@ async function eliminarUsuario(id){
 }
 async function crearTransferencia(emisor,receptor,monto,data){
     const client = await pool.connect()
-    const id_emisor = await client.query(`select id from usuarios where nombre='${emisor}'`)
-    const id_receptor = await client.query(`select id from usuarios where nombre='${receptor}'`)
-    const crearTransferencia = await client.query(`insert into transferencias (emisor, receptor, monto,fecha) values (${id_emisor.rows[0].id},${id_receptor.rows[0].id},${monto},'${data}')`)
+    // __________________________________________________________________________
+    const emisor2 = await client.query(`select id,balance from usuarios where nombre='${emisor}'`)
+    const data_emisor = emisor2.rows[0]
+    const id_emisor=data_emisor.id
+    const balance_emisor = data_emisor.balance
+//______________________________________________________________________
+    const receptor2 = await client.query(`select id,balance from usuarios where nombre='${receptor}'`)
+    const data_receptor = receptor2.rows[0]
+    const id_receptor= data_receptor.id
+    const balance_receptor = data_receptor.balance
+    console.log(balance_receptor);
+    if(balance_emisor < monto||balance_emisor < 0){
+        return
+    }
+    if(balance_emisor < 0){
+        return
+    }
+    //se debe actualizar el monto del balance del emisor(se debe restar)
+    const resta = parseInt(balance_emisor) - monto
+    const suma = parseInt(balance_receptor) + parseInt(monto)
+    const montoActualizarE =  await client.query(`update usuarios set balance=${resta} where id=${id_emisor}`)
+    //se debe actualizar el monto de balance del receptor(se debe sumar)
+    const montoActualizarR =  await client.query(`update usuarios set balance=${suma} where id=${id_receptor}`)
+    
+
+   const crearTransferencia = await client.query(`insert into transferencias (emisor, receptor, monto,fecha) values (${id_emisor},${id_receptor},${monto},'${data}')`)
     client.release()
 
 }
